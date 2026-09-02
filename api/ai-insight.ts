@@ -11,7 +11,7 @@ export default async function handler(request: { method?: string; body?: Request
     input = {}
   }
   const prompt = `You are a community manager assistant. Use only these recorded facts. Do not infer buying intent or invent details. Return concise plain text with exactly three labelled lines: Activity Summary, Relevant Space, Suggested Next Step. Member: ${input.name || 'Unknown'}. Primary space: ${input.space || 'Unknown'}. Recorded activity: ${(input.history || []).join('; ')}`
-  const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest']
+  const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest']
   for (const model of models) {
     const upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) })
     if (upstream.ok) {

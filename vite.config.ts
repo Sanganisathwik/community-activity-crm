@@ -41,7 +41,7 @@ function geminiProxy(apiKey: string): Plugin {
             const input = JSON.parse(body) as { name: string; space: string; history: string[] }
             const prompt = `You are a community manager assistant. Use only these recorded facts. Do not infer buying intent or invent details. Return concise plain text with exactly three labelled lines: Activity Summary, Relevant Space, Suggested Next Step. Member: ${input.name}. Primary space: ${input.space}. Recorded activity: ${input.history.join('; ')}`
             const request = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
-            const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest']
+            const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest']
             let result: Response | undefined
             let data: { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> } = {}
             for (const model of models) { const candidate = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, request); if (candidate.ok) { result = candidate; data = await candidate.json() as typeof data; break } console.error(`Gemini model ${model} returned HTTP ${candidate.status}`) }

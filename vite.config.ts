@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
@@ -7,6 +7,20 @@ function localMemberFile(): Plugin {
     name: 'local-member-file',
     configureServer(server) {
       server.middlewares.use('/api/members-sync', async (request, response, next) => {
+        if (request.method === 'GET') {
+          try {
+            const filePath = resolve(process.cwd(), 'data', 'members.csv')
+            const content = await readFile(filePath, 'utf8')
+            response.statusCode = 200
+            response.setHeader('Content-Type', 'text/csv; charset=utf-8')
+            response.end(content)
+            return
+          } catch {
+            response.statusCode = 404
+            response.end('data/members.csv not found')
+            return
+          }
+        }
         if (request.method !== 'POST') { next(); return }
         let body = ''
         request.on('data', chunk => { body += chunk })
@@ -17,9 +31,11 @@ function localMemberFile(): Plugin {
             await writeFile(filePath, body, 'utf8')
             response.statusCode = 204
             response.end()
-          } catch {
+          } catch (err: any) {
+            console.error('Failed to update data/members.csv:', err?.message || err)
             response.statusCode = 500
-            response.end('Unable to update data/members.csv')
+            response.setHeader('Content-Type', 'text/plain')
+            response.end(err?.message || 'Unable to update data/members.csv')
           }
         })
       })
